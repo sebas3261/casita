@@ -14,7 +14,7 @@ const RegisterView = () => {
       // Llamamos a signUp con los datos del formulario
       await signUp(email, password, { name });
       // Si el registro es exitoso, redirigimos a la pantalla de login
-      router.push('/auth'); // Redirigir a LoginView
+      router.push('./auth'); // Redirigir a LoginView
     } catch (error) {
       console.log('Error en el registro:', error);
     }
