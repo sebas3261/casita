@@ -10,6 +10,7 @@ interface userProps {
     email?: String;
     age?: number
     direction?: String;
+    rol?: String;
 }
 
 interface AuthContextProps {

@@ -1,19 +1,27 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AuthContext } from '../../context/authContext/authContext'; // Asegúrate de que la ruta sea correcta
 
 const RegisterView = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { signUp } = useContext(AuthContext); // Obtener signUp desde el context
 
-  const handleRegister = () => {
-    // Handle register logic here
+  const handleRegister = async () => {
+    try {
+      // Llamamos a signUp con los datos del formulario
+      await signUp(email, password, { name });
+      // Si el registro es exitoso, redirigimos a la pantalla de login
+      router.push('/auth'); // Redirigir a LoginView
+    } catch (error) {
+      console.log('Error en el registro:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* <Image style={styles.logo} source={require('./assets/logo.png')} /> */}
       <Text style={styles.title}>Register</Text>
 
       <TextInput
@@ -45,7 +53,7 @@ const RegisterView = () => {
 
       <View style={styles.loginContainer}>
         <Text style={styles.text}>Already have an account?</Text>
-        <TouchableOpacity onPress={() => router.push({ pathname: "/auth" })}>
+        <TouchableOpacity onPress={() => router.push('/auth')}>
           <Text style={styles.link}>Login here</Text>
         </TouchableOpacity>
       </View>
@@ -60,11 +68,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#f4f4f4',
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
   },
   title: {
     fontSize: 24,
