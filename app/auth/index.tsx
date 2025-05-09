@@ -1,19 +1,20 @@
 import { router } from 'expo-router';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { AuthContext } from '../../context/authContext/authContext'; // Asegúrate de que la ruta sea correcta
+import { useAuth } from '../../context/authContext/authContext'; // Asegúrate de que la ruta sea correcta
 
 const AuthView = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLogin, setIsLogin] = useState(true); // Estado para determinar si es Login o Register
-  const { login, signUp } = useContext(AuthContext); // Obtener login y signUp desde el context
+  const { login } = useAuth();
+  const { register } = useAuth(); // Asegúrate de que register esté disponible en el contexto
 
   const handleLogin = async () => {
     try {
       await login(email, password);
-      router.push('/'); // Redirigir a la pantalla principal después del login
+      router.push('/main'); // Redirigir a la pantalla principal después del login
     } catch (error) {
       console.log('Error en el login:', error);
     }
@@ -21,8 +22,8 @@ const AuthView = () => {
 
   const handleRegister = async () => {
     try {
-      await signUp(email, password, { name });
-      router.push('./main/home'); // Redirigir a LoginView después de un registro exitoso
+      await register(email, password, name);  // Usar register en lugar de signUp
+      router.push('./main'); // Redirigir a LoginView después de un registro exitoso
     } catch (error) {
       console.log('Error en el registro:', error);
     }

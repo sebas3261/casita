@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // For AppBar icons
 
 const App = () => {
@@ -38,6 +38,18 @@ const App = () => {
             <Text style={styles.deviceCount}>15 devices</Text>
             <Switch value={false} />
           </View>
+        </View>
+      </View>
+
+      {/* Family Members Section */}
+      <View style={styles.familyMembersContainer}>
+        <Text style={styles.familyMembersTitle}>Family Members</Text>
+        <View style={styles.familyMembersList}>
+          {/* Family Member Avatars */}
+          <Image source={{ uri: 'https://example.com/image1.jpg' }} style={styles.avatar} />
+          <Image source={{ uri: 'https://example.com/image2.jpg' }} style={styles.avatar} />
+          <Image source={{ uri: 'https://example.com/image3.jpg' }} style={styles.avatar} />
+          <Image source={{ uri: 'https://example.com/image4.jpg' }} style={styles.avatar} />
         </View>
       </View>
 
@@ -104,12 +116,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
   },
-  roomImage: {
-    width: '100%',
-    height: 150,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
   roomName: {
     padding: 10,
     fontSize: 18,
@@ -124,6 +130,28 @@ const styles = StyleSheet.create({
   deviceCount: {
     fontSize: 14,
     color: '#7f7f7f',
+  },
+  familyMembersContainer: {
+    margin: 15,
+    padding: 10,
+    backgroundColor: '#f4f4f4',
+    borderRadius: 10,
+  },
+  familyMembersTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  familyMembersList: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginHorizontal: 5,
   },
   bottomNav: {
     flexDirection: 'row',
