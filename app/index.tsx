@@ -21,6 +21,7 @@ export default function Index() {
     try {
       await login(email, password);
       console.log("sesion iniciada");
+      router.replace("./main");
     } catch (error) {
       console.log("Error al iniciar sesion", error);
     }
