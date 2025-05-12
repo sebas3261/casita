@@ -2,13 +2,13 @@ import { AuthContext } from "@/context/authContext/authContext";
 import { router } from "expo-router";
 import React, { useContext, useState } from "react";
 import {
-    Keyboard,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
 export default function signup() {
@@ -20,6 +20,7 @@ export default function signup() {
   const handleSignup = () => {
     try {
       signup(email, password, { name });
+      router.replace("./main/home");
       console.log("Usuario creado");
     } catch (error) {
       console.log("Error al crear el usuario", error);

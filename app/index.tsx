@@ -21,7 +21,7 @@ export default function Index() {
     try {
       await login(email, password);
       console.log("sesion iniciada");
-      router.replace("./main");
+      router.replace("./main/home");
     } catch (error) {
       console.log("Error al iniciar sesion", error);
     }
@@ -52,7 +52,7 @@ export default function Index() {
         </TouchableOpacity>
         <View style={styles.registerContainer}>
           <Text style={styles.text}>Don't have an account?</Text>
-          <TouchableOpacity onPress={() => router.replace("./signup")}>
+          <TouchableOpacity onPress={() => router.replace("./main/home")}>
             <Text style={styles.link}>Register</Text>
           </TouchableOpacity>
         </View>
