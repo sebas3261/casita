@@ -1,7 +1,7 @@
 import {
-    createUserWithEmailAndPassword,
-    getAuth,
-    signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword
 } from "firebase/auth";
 import { getDatabase, onValue, ref, set } from "firebase/database";
 import { createContext, useReducer } from "react";

@@ -10,10 +10,17 @@ export default function _layout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "transparent",
+          backgroundColor: "white",
+          borderTopColor: "black",
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 60,
+          paddingBottom: 30,
         },
       }}
     >
@@ -26,7 +33,7 @@ export default function _layout() {
               <Ionicons
                 name="people"
                 size={24}
-                color={focused ? "white" : "black"}
+                color={focused ? "white" : "grey"}
               />
             </TabButtonHover>
           ),
@@ -41,7 +48,7 @@ export default function _layout() {
               <Foundation
                 name="home"
                 size={24}
-                color={focused ? "white" : "black"}
+                color={focused ? "white" : "grey"}
               />
             </TabButtonHover>
           ),
@@ -56,7 +63,7 @@ export default function _layout() {
               <Ionicons
                 name="settings-sharp"
                 size={24}
-                color={focused ? "white" : "black"}
+                color={focused ? "white" : "grey"}
               />
             </TabButtonHover> 
           ),
