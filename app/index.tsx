@@ -1,112 +1,129 @@
-import { AuthContext } from "@/context/authContext/authContext";
-import "@/utils/firebaseConfig";
-import { router } from 'expo-router';
-import React, { useContext, useState } from "react";
-import {
-  Keyboard,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { Redirect } from "expo-router";
+import React, { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import colors from "../styles/Colors";
+export default function Welcome() {
+  const [step, setStep] = useState(0);
+  const [redirect, setRedirect] = useState(false);
 
-export default function Index() {
-  const { login } = useContext(AuthContext);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = async() => {
-    try {
-      await login(email, password);
-      console.log("sesion iniciada");
-      router.replace("./main/home");
-    } catch (error) {
-      console.log("Error al iniciar sesion", error);
+  const handleNext = () => {
+    if (step === 2) {
+      setRedirect(true);
+    } else {
+      setStep(step + 1);
     }
   };
+
+  if (redirect) {
+    return <Redirect href="./auth" />; // Cambia la ruta a tu pantalla principal
+  }
+
+  // Textos para cada paso, puedes agregar imágenes en assets si quieres
+  const stepContents = [
+    {
+      title: "Controla tu hogar desde cualquier lugar",
+      subtitle: "Gestiona luces, temperatura y seguridad con un toque.",
+      // image: require("../assets/smart_home_1.png"),
+    },
+    {
+      title: "Automatizaciones inteligentes",
+      subtitle: "Programa escenarios para que tu casa se adapte a ti.",
+      // image: require("../assets/smart_home_2.png"),
+    },
+    {
+      title: "Monitorea en tiempo real",
+      subtitle: "Recibe alertas y datos precisos para mantener tu hogar seguro.",
+      // image: require("../assets/smart_home_3.png"),
+    },
+  ];
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Log in</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
-          placeholderTextColor={"#888"}
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor={"#888"}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log in</Text>
-        </TouchableOpacity>
-        <View style={styles.registerContainer}>
-          <Text style={styles.text}>Don't have an account?</Text>
-          <TouchableOpacity onPress={() => router.replace("./main/home")}>
-            <Text style={styles.link}>Register</Text>
-          </TouchableOpacity>
-        </View>
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        {/* Si tienes imágenes descomenta esta línea y cambia la ruta */}
+        {/* <Image source={stepContents[step].image} style={styles.image} /> */}
       </View>
-    </TouchableWithoutFeedback>
+
+      <View style={styles.pagination}>
+        {stepContents.map((_, i) => (
+          <View
+            key={i}
+            style={[styles.dot, step === i && styles.activeDot]}
+          />
+        ))}
+      </View>
+
+      <Text style={styles.title}>{stepContents[step].title}</Text>
+      <Text style={styles.subtitle}>{stepContents[step].subtitle}</Text>
+
+      <TouchableOpacity style={styles.button} onPress={handleNext}>
+        <Text style={styles.buttonText}>{step === stepContents.length - 1 ? "Comenzar" : "Siguiente"}</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.white,
+    paddingHorizontal: 25,
+    paddingTop: 60,
+    justifyContent: "flex-start",
+  },
+  imageContainer: {
+    height: 220,
+    width: "100%",
+    marginBottom: 40,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#f4f4f4",
+    // backgroundColor: "#f0f0f0", // Solo para debug, quitar si quieres
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+  },
+  pagination: {
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    marginBottom: 30,
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#DDD",
+    marginRight: 12,
+  },
+  activeDot: {
+    backgroundColor: colors.black, // Usa tu color principal
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
+    fontSize: 26,
+    fontWeight: "700",
+    color: colors.black,
+    marginBottom: 14,
   },
-  input: {
-    width: "100%",
-    padding: 12,
-    marginBottom: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
+  subtitle: {
+    fontSize: 17,
+    fontWeight: "400",
+    color: colors.grayDark,
+    marginBottom: 60,
   },
   button: {
-    width: "100%",
-    padding: 15,
-    backgroundColor: "#3b71f3",
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 10,
+    backgroundColor: colors.black,
+    paddingVertical: 15,
+    borderRadius: 14,
+    width: "85%",
+    alignSelf: "center",
+    position: "absolute",
+    bottom: 40,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  registerContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  text: {
-    fontSize: 14,
-    color: "#888",
-  },
-  link: {
-    fontSize: 14,
-    color: "#3b71f3",
-    marginLeft: 5,
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
   },
 });

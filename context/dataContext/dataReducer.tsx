@@ -2,6 +2,10 @@ export interface dataState{
     name?: any,
     email?: any,
 }
+export const defaultDataValues: dataState = {
+    name: undefined,
+    email: undefined,
+}
 
 type ActionsProps = {type:"LOGIN",payload: any} | {type:"LOGOUT"}
 

@@ -2,7 +2,12 @@
 import React from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 
-export default function CustomSwitch({ value, onValueChange }) {
+interface CustomSwitchProps {
+  value: boolean;
+  onValueChange: (newValue: boolean) => void;
+}
+
+export default function CustomSwitch({ value, onValueChange }: CustomSwitchProps) {
   const translateX = new Animated.Value(value ? 24 : 0);
 
   const toggleSwitch = () => {

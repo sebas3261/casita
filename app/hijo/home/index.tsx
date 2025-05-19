@@ -5,6 +5,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "rea
 
 
 
+
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState("Lights");
 
