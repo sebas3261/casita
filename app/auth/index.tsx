@@ -44,7 +44,7 @@ export default function AuthScreen() {
         router.replace("./mama/home");
         break;
       case "hijo":
-        router.replace("./o/home");
+        router.replace("./hijo/home");
         break;
       case "otro":
         router.replace("./otro/home");
@@ -57,7 +57,7 @@ export default function AuthScreen() {
   const handleLogin = async () => {
     try {
       await login(loginEmail, loginPassword);
-      
+
       redirectByRole(signupRole); //
       console.log("Login exitoso");
     } catch (error) {

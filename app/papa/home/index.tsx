@@ -1,4 +1,5 @@
 import CustomSwitch from "@/components/ToogleSwitch";
+import colors from "@/styles/Colors";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
@@ -8,6 +9,7 @@ import { DoorsProvider, useDoorsContext } from "../../../context/doorsContext/Do
 import { LedProvider, useLedContext } from "../../../context/ledsContext/LedsContext";
 import { useSensoresContext } from "../../../context/sensoresContext.tsx/SensoresContext";
 
+import { Modal, Pressable } from "react-native";
 
 
 
@@ -34,6 +36,7 @@ function Home() {
   const { userName } = useAuth();
   const capitalizedUserName =
   userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase();
+  const [modalVisible, setModalVisible] = useState(false);
 
 
   const getWeatherDetails = (temp: number) => {
@@ -60,16 +63,72 @@ function Home() {
 
       {/* Family Members */}
       <View style={styles.familySection}>
-        <Text style={styles.subtitle}>Family Members</Text>
+        <View style={styles.familyHeaderRow}>
+          <Text style={styles.subtitle}>Family Members</Text>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            style={styles.manageButton}
+          >
+            <Text style={styles.manageButtonText}>Manage Family Members</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.familyAvatars}>
-          {/* Puedes agregar imágenes aquí si quieres */}
+          <Image
+            source={require("../../../assets/images/user.png")}
+            style={styles.avatar}
+          />
+          <Image
+            source={require("../../../assets/images/user.png")}
+            style={styles.avatar}
+          />
+          <Image
+            source={require("../../../assets/images/user.png")}
+            style={styles.avatar}
+          />
         </View>
       </View>
 
+      {/* Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Manage Family Members</Text>
+            {/* Aquí puedes agregar el contenido para gestionar miembros */}
+            <Text>This is where you can add or remove family members.</Text>
+
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+
       <View style={styles.sensorSection}>
-        <Text style={styles.sensorTitle}>Movimiento Detectado:</Text>
-        <Text style={styles.sensorValue}>{sensores.mov}</Text>
-      </View>
+  <View style={styles.sensorIconContainer}>
+    <MaterialCommunityIcons
+      name="motion-sensor"
+      size={32}
+      color="#985EE1"
+    />
+  </View>
+  <View style={styles.sensorTextContainer}>
+    <Text style={styles.sensorTitle}>Movimiento Detectado:</Text>
+    <Text style={styles.sensorValue}>{sensores.mov}</Text>
+  </View>
+</View>
+
 
       {/* Weather Info */}
       <LinearGradient
@@ -247,12 +306,17 @@ const styles = StyleSheet.create({
   },
   familyAvatars: {
     flexDirection: "row",
+    marginLeft: 30,
   },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 8,
+    marginLeft: -20,
+    borderWidth: 2,
+    borderColor: colors.grey,
+
   },
   weatherCard: {
     borderRadius: 16,
@@ -285,6 +349,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 4,
     marginBottom: 30,
+    shadowColor: "#a3a3a3",
   },
   tabButton: {
     flex: 1,
@@ -334,26 +399,104 @@ const styles = StyleSheet.create({
     color: "#888",
     marginBottom: 10,
   },
+  
+
   sensorSection: {
     marginTop: 20,
-    padding: 20,
-    backgroundColor: "#fff",
-    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    backgroundColor: "#f0f0f3",
+    borderRadius: 25,
+    flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowColor: "#a3a3a3",
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.3,
     shadowRadius: 10,
-    elevation: 3,
+    elevation: 6,
+  },
+  sensorIconContainer: {
+    backgroundColor: "#e1e2e6",
+    borderRadius: 25,
+    padding: 15,
+    marginRight: 20,
+    shadowColor: "#d1d2d6",
+    shadowOffset: { width: -3, height: -3 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  sensorTextContainer: {
+    flex: 1,
   },
   sensorTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 8,
+    color: "#999999",
+    marginBottom: 5,
   },
   sensorValue: {
     fontSize: 36,
     fontWeight: "bold",
     color: "#985EE1",
   },
+  
+  familyHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  manageButton: {
+    backgroundColor: colors.grey, // usa el color que prefieras
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  manageButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    width: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: colors.grey,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  
   
 });

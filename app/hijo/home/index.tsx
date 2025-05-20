@@ -1,34 +1,74 @@
-import CustomSwitch from "@/components/ToogleSwitch";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
+import { useAuth } from "../../../context/authContext/authContext";
+import { DoorsProvider, useDoorsContext } from "../../../context/doorsContext/DoorsContext";
+import { LedProvider, useLedContext } from "../../../context/ledsContext/LedsContext";
+import { useSensoresContext } from "../../../context/sensoresContext.tsx/SensoresContext";
 
+export default function HomeWrapper() {
+  return (
+    <DoorsProvider>
+      <LedProvider>
+        <Home />
+      </LedProvider>
+    </DoorsProvider>
+  );
+}
 
+function Home() {
+  const [selectedTab, setSelectedTab] = useState("Doors");
 
-export default function Home() {
-  const [selectedTab, setSelectedTab] = useState("Lights");
+  const { doors, setDoorState } = useDoorsContext();
+  const { leds, setLedState } = useLedContext();
+  const { sensores } = useSensoresContext();
+  const { userName } = useAuth();
+
+  const capitalizedUserName =
+    userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase();
+
+  const getWeatherDetails = (temp: number) => {
+    if (temp <= 5) return "❄️ Cold   H:6°  L:-2°";
+    if (temp > 5 && temp <= 15) return "🌤️ Partly Cloudy   H:17°  L:5°";
+    if (temp > 15 && temp <= 25) return "☀️ Sunny   H:26°  L:15°";
+    if (temp > 25) return "🔥 Hot   H:33°  L:20°";
+    return "🌤️ Partly Cloudy   H:17°  L:5°";
+  };
+
+  useEffect(() => {
+    if (sensores.mov === 1) {
+      Alert.alert(
+        "⚠️ Security Alert",
+        "Movement detected!",
+        [{ text: "OK" }]
+      );
+    }
+  }, [sensores.mov]);
 
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Home</Text>
-        <Image
-          // source={require("@/assets/settings.png")}
-          style={styles.settingsIcon}
-        />
+        <Text style={styles.title}>Welcome, {capitalizedUserName}</Text>
       </View>
 
-      {/* Family Members */}
-      <View style={styles.familySection}>
-        <Text style={styles.subtitle}>Family Members</Text>
-        <View style={styles.familyAvatars}>
-          <Image source={require("@/assets/images/user.png")} style={styles.avatar} />
-          <Image source={require("@/assets/images/user.png")} style={styles.avatar} />
-          <Image source={require("@/assets/images/user.png")} style={styles.avatar} />
-        </View>
-      </View>
+      {/* Sensor Movimiento */}
+      <View style={styles.sensorSection}>
+  <View style={styles.sensorIconContainer}>
+    <MaterialCommunityIcons
+      name="motion-sensor"
+      size={32}
+      color="#985EE1"
+    />
+  </View>
+  <View style={styles.sensorTextContainer}>
+    <Text style={styles.sensorTitle}>Movimiento Detectado:</Text>
+    <Text style={styles.sensorValue}>{sensores.mov}</Text>
+  </View>
+</View>
+
 
       {/* Weather Info */}
       <LinearGradient
@@ -38,100 +78,11 @@ export default function Home() {
         style={styles.weatherCard}
       >
         <Text style={styles.locationText}>My Location</Text>
-        <Text style={styles.cityText}>Montreal</Text>
-        <Text style={styles.temperature}>-10°</Text>
-        <Text style={styles.weatherDetails}>🌤️ Partly Cloudy   H:2°  L:12°</Text>
+        <Text style={styles.cityText}>Chía, Cundinamarca</Text>
+        <Text style={styles.temperature}>{sensores.temp}</Text>
+        <Text style={styles.weatherDetails}>{getWeatherDetails(sensores.temp)}</Text>
       </LinearGradient>
-
-      {/* Tabs as Radio Buttons */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[
-            styles.tabButton,
-            selectedTab === "Lights" && styles.activeTabButton,
-          ]}
-          onPress={() => setSelectedTab("Lights")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              selectedTab === "Lights" ? styles.activeText : styles.inactiveText,
-            ]}
-          >
-            Lights
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.tabButton,
-            selectedTab === "Devices" && styles.activeTabButton,
-          ]}
-          onPress={() => setSelectedTab("Devices")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              selectedTab === "Devices"
-                ? styles.activeText
-                : styles.inactiveText,
-            ]}
-          >
-            Devices
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Lights Cards */}
-      <View style={styles.LightsContainer}>
-        {selectedTab === "Lights" ? (
-          <>
-            <LightsCard
-              name="Living Lights"
-              devices={5}
-              isOn={true}
-              image={require("@/assets/images/living.png")}
-            />
-            <LightsCard
-              name="BedLights"
-              devices={3}
-              isOn={false}
-              image={require("@/assets/images/living.png")}
-            />
-          </>
-        ) : (
-          <>
-            <LightsCard
-              name="Kitchen"
-              devices={2}
-              isOn={true}
-              // image={require("@/assets/images/kitchen.png")}
-            />
-            <LightsCard
-              name="BathLights"
-              devices={1}
-              isOn={false}
-              // image={require("@/assets/images/bathLights.png")}
-            />
-          </>
-        )}
-      </View>
     </ScrollView>
-  );
-}
-
-function LightsCard({ name, devices, isOn, image }) {
-  const [value, setValue] = useState(isOn);
-
-  return (
-    <View style={styles.card}>
-      <Image source={image} style={styles.cardImage} />
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{name}</Text>
-        <Text style={styles.cardSubtitle}>{devices} devices</Text>
-        <CustomSwitch value={value} onValueChange={setValue} />
-      </View>
-    </View>
   );
 }
 
@@ -151,26 +102,44 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
-  settingsIcon: {
-    width: 24,
-    height: 24,
-  },
-  familySection: {
+  sensorSection: {
     marginTop: 20,
-  },
-  subtitle: {
-    color: "#777",
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  familyAvatars: {
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    backgroundColor: "#f0f0f3",
+    borderRadius: 25,
     flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#a3a3a3",
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 8,
+  sensorIconContainer: {
+    backgroundColor: "#e1e2e6",
+    borderRadius: 25,
+    padding: 15,
+    marginRight: 20,
+    shadowColor: "#d1d2d6",
+    shadowOffset: { width: -3, height: -3 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  sensorTextContainer: {
+    flex: 1,
+  },
+  sensorTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#999999",
+    marginBottom: 5,
+  },
+  sensorValue: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "#985EE1",
   },
   weatherCard: {
     borderRadius: 16,
@@ -194,64 +163,5 @@ const styles = StyleSheet.create({
   weatherDetails: {
     color: "#fff",
     marginTop: 5,
-  },
-  tabs: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#e9ebf0",
-    marginTop: 20,
-    borderRadius: 10,
-    padding: 4,
-    marginBottom: 30,
-
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: "center",
-
-  },
-  activeTabButton: {
-    backgroundColor: "#fff",
-    margin: 1,
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  activeText: {
-    color: "#000",
-  },
-  inactiveText: {
-    color: "#888",
-  },
-  LightsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  card: {
-    width: "48%", // Aproximadamente la mitad del ancho con espacio entre
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: "hidden",
-  },
-  cardImage: {
-    width: "100%",
-    height: 100, // Más pequeño
-  },
-  cardContent: {
-    padding: 10,
-  },
-  
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  cardSubtitle: {
-    color: "#888",
-    marginBottom: 10,
   },
 });

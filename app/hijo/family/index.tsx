@@ -1,61 +1,53 @@
-// app/AdminPanel.js
-import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text } from "react-native";
+import RegistroCard from "../../../components/RegistroCard"; // Ajusta nombre y ruta correcta
+import { useRegistros } from "../../../context/registerContext/RegisterContext";
 
-export default function AdminPanel() {
-  const router = useRouter();
+export default function RegistrosPuertaPrincipalScreen() {
+  const { registros } = useRegistros();
+
+  // Filtrar registros que contienen "abrir principal" (case insensitive)
+  const registrosFiltrados = registros.filter(registro =>
+    registro.mensaje.toLowerCase().includes("abrir principal")
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Admin Panel</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Registros: Abrir puerta principal</Text>
 
-      <TouchableOpacity
-        style={styles.optionButton}
-        onPress={() => router.push("./family/AdministrarPermisoUsuario")}
-      >
-        <Text style={styles.optionText}>Administrar Permisos de Usuarios</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.optionButton}
-        onPress={() => alert("Otra opción")}
-      >
-        <Text style={styles.optionText}>Configuración del Sistema</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.optionButton}
-        onPress={() => alert("Otra opción")}
-      >
-        <Text style={styles.optionText}>Reportes</Text>
-      </TouchableOpacity>
-
-      {/* Agrega más opciones aquí */}
-    </View>
+      {(!registrosFiltrados || registrosFiltrados.length === 0) ? (
+        <Text style={styles.emptyText}>No hay registros para esta acción.</Text>
+      ) : (
+        registrosFiltrados
+          .sort((a, b) => b.fecha - a.fecha) // orden descendente por fecha
+          .map((registro) => (
+            <RegistroCard
+              key={registro.id}
+              mensaje={registro.mensaje}
+              usuario={registro.usuario}
+              fecha={registro.fecha}
+            />
+          ))
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
     backgroundColor: "#f6f7fa",
+    flex: 1,
   },
-  title: {
-    fontSize: 28,
+  header: {
+    marginTop: 60,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 30,
+    margin: 16,
+    color: "#333",
   },
-  optionButton: {
-    backgroundColor: "#985EE1",
-    padding: 18,
-    borderRadius: 14,
-    marginBottom: 15,
-  },
-  optionText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
+  emptyText: {
+    textAlign: "center",
+    marginTop: 32,
+    color: "#999",
   },
 });
