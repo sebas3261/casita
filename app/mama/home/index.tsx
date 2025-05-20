@@ -1,3 +1,4 @@
+import CustomSwitch from "@/components/ToogleSwitch";
 import colors from "@/styles/Colors";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
@@ -215,27 +216,27 @@ function Home() {
   );
 }
 
-function DoorCard({ name, isClosed, image }) {
+function DoorCard({ name, isClosed, image, onToggle }) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{name}</Text>
         <Text style={styles.cardSubtitle}>{isClosed ? "Closed" : "Open"}</Text>
-        {/* <CustomSwitch value={isClosed} onValueChange={onToggle} /> */}
+        <CustomSwitch value={isClosed} onValueChange={onToggle} />
       </View>
     </View>
   );
 }
 
-function LightsCard({ name, devices, isOn, image }) {
+function LightsCard({ name, devices, isOn, image, onToggle }) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{name}</Text>
-        <Text style={styles.cardSubtitle}>{isOn ? "On" : "Off"}</Text>
-        {/* <CustomSwitch value={isOn} onValueChange={onToggle} /> */}
+        <Text style={styles.cardSubtitle}>{isOn ? "On" : "Off"}</Text>  {/* Aquí el cambio */}
+        <CustomSwitch value={isOn} onValueChange={onToggle} />
       </View>
     </View>
   );

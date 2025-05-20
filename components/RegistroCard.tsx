@@ -1,41 +1,43 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 interface Props {
   mensaje: string;
   usuario: string;
   fecha: number;
+  children?: ReactNode; // Aquí se acepta contenido extra opcional
 }
 
 const getIcon = (mensaje: string) => {
-  if (mensaje.toLowerCase().includes("led")) {
+  const msg = mensaje.toLowerCase();
+  if (msg.includes("led")) {
     return <MaterialCommunityIcons name="lightbulb-on-outline" size={28} color="#f5c518" />;
-  } else if (mensaje.toLowerCase().includes("abrir") || mensaje.toLowerCase().includes("cerrar") || mensaje.toLowerCase().includes("door")) {
+  } else if (msg.includes("abrir") || msg.includes("cerrar") || msg.includes("door")) {
     return <MaterialCommunityIcons name="door" size={28} color="#4a90e2" />;
-  } else if (mensaje.toLowerCase().includes("login") || mensaje.toLowerCase().includes("entró") || mensaje.toLowerCase().includes("inició sesión")) {
+  } else if (msg.includes("login") || msg.includes("entró") || msg.includes("inició sesión")) {
     return <MaterialCommunityIcons name="login" size={28} color="#50e3c2" />;
-  } else if (mensaje.toLowerCase().includes("cerró sesión")) {
+  } else if (msg.includes("cerró sesión")) {
     return <MaterialCommunityIcons name="logout" size={28} color="#ff4d4d" />;
-  } else if (mensaje.toLowerCase().includes("movimiento")) {
+  } else if (msg.includes("movimiento")) {
     return <MaterialCommunityIcons name="run-fast" size={28} color="#ff9900" />;
   } else {
     return <MaterialCommunityIcons name="information-outline" size={28} color="#aaa" />;
   }
 };
 
-const RegistroCard = ({ mensaje, usuario, fecha }: Props) => {
+const RegistroCard = ({ mensaje, usuario, fecha, children }: Props) => {
   const date = new Date(fecha).toLocaleString();
 
   return (
     <View style={styles.card}>
-      <View style={styles.icon}>
-        {getIcon(mensaje)}
-      </View>
+      <View style={styles.icon}>{getIcon(mensaje)}</View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{mensaje}</Text>
         <Text style={styles.subtitle}>By {usuario} - {date}</Text>
       </View>
+      {/* Aquí mostramos el contenido extra, por ejemplo botón eliminar */}
+      {children && <View style={styles.actions}>{children}</View>}
     </View>
   );
 };
@@ -72,5 +74,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#888",
     marginTop: 4,
+  },
+  actions: {
+    marginLeft: 12,
   },
 });

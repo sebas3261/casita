@@ -19,7 +19,7 @@ export default function _layout() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 60,
+          height: 90,
           paddingBottom: 30,
         },
       }}

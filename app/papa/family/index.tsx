@@ -1,12 +1,18 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 import RegistroCard from "../../../components/RegistroCard";
 import { useRegistros } from "../../../context/registerContext/RegisterContext";
 
-
 export default function RegistrosScreen() {
-  const { registros } = useRegistros();
+  const { registros, deleteRegistro } = useRegistros();
+
+  const handleDelete = (id: string) => {
+    deleteRegistro(id).catch((e) => {
+      console.error("Error eliminando registro:", e);
+    });
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -23,7 +29,18 @@ export default function RegistrosScreen() {
               mensaje={registro.mensaje}
               usuario={registro.usuario}
               fecha={registro.fecha}
-            />
+            >
+              <TouchableOpacity
+                style={styles.deleteIconButton}
+                onPress={() => handleDelete(registro.id)}
+              >
+                <MaterialCommunityIcons
+                  name="trash-can-outline"
+                  size={24}
+                  color="#e74c3c"
+                />
+              </TouchableOpacity>
+            </RegistroCard>
           ))
       )}
     </ScrollView>
@@ -37,7 +54,6 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: 60,
-
     fontSize: 24,
     fontWeight: "bold",
     margin: 16,
@@ -47,5 +63,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 32,
     color: "#999",
+  },
+  deleteIconButton: {
+    marginLeft: 12,
+    padding: 6,
   },
 });

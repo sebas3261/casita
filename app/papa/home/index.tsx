@@ -3,11 +3,14 @@ import colors from "@/styles/Colors";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../../context/authContext/authContext"; // Asegúrate de que la ruta sea correcta
 import { DoorsProvider, useDoorsContext } from "../../../context/doorsContext/DoorsContext";
 import { LedProvider, useLedContext } from "../../../context/ledsContext/LedsContext";
 import { useSensoresContext } from "../../../context/sensoresContext.tsx/SensoresContext";
+import {
+  useUsers
+} from "../../../context/usersContext/UsersContext";
 
 import { Modal, Pressable } from "react-native";
 
@@ -32,12 +35,29 @@ function Home() {
 
   // Context para luces
   const { leds, setLedState } = useLedContext();
+  const { users, loading, error, updateUserRole } = useUsers();
   const { sensores } = useSensoresContext();
   const { userName } = useAuth();
   const capitalizedUserName =
   userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase();
   const [modalVisible, setModalVisible] = useState(false);
+  const [updatingUid, setUpdatingUid] = useState<string | null>(null);
 
+
+  const changeRole = async (uid: string, currentRole: string) => {
+    // Ejemplo simple: alternar entre "Usuario" y "Admin"
+    const newRole = currentRole === "Admin" ? "Usuario" : "Admin";
+
+    try {
+      setUpdatingUid(uid);
+      await updateUserRole(uid, newRole);
+      Alert.alert("Éxito", `Rol cambiado a ${newRole}`);
+    } catch (err) {
+      Alert.alert("Error", "No se pudo cambiar el rol");
+    } finally {
+      setUpdatingUid(null);
+    }
+  };
 
   const getWeatherDetails = (temp: number) => {
     if (temp <= 5) return "❄️ Cold   H:6°  L:-2°";
@@ -53,7 +73,7 @@ function Home() {
       {/* Header */}
       <View style={styles.header}>
       <Text style={styles.title}>
-  Welcome, {capitalizedUserName}
+  Hola, {capitalizedUserName}
 </Text>
         <Image
           // source={require("@/assets/settings.png")}
@@ -64,12 +84,12 @@ function Home() {
       {/* Family Members */}
       <View style={styles.familySection}>
         <View style={styles.familyHeaderRow}>
-          <Text style={styles.subtitle}>Family Members</Text>
+          <Text style={styles.subtitle}>Miembros de la Familia</Text>
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
             style={styles.manageButton}
           >
-            <Text style={styles.manageButtonText}>Manage Family Members</Text>
+            <Text style={styles.manageButtonText}>Gestionar Miembros</Text>
           </TouchableOpacity>
         </View>
 
@@ -91,28 +111,43 @@ function Home() {
 
       {/* Modal */}
       <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Manage Family Members</Text>
-            {/* Aquí puedes agregar el contenido para gestionar miembros */}
-            <Text>This is where you can add or remove family members.</Text>
+      visible={modalVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalBackground}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Miembros</Text>
 
-            <Pressable
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </Pressable>
-          </View>
+          {loading && <Text style={styles.loadingText}>Cargando usuarios...</Text>}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          {!loading && !error && (
+            <FlatList
+              data={users}
+              keyExtractor={(item) => item.uid}
+              renderItem={({ item }) => (
+                <View style={styles.userCard}>
+                  <Text style={styles.username}>{item.username}</Text>
+                  <Text style={styles.userRole}>Rol: {item.role}</Text>
+                </View>
+              )}
+              ListEmptyComponent={
+                <Text style={styles.noUsersText}>No hay usuarios registrados.</Text>
+              }
+            />
+          )}
+
+          <Pressable
+            style={styles.closeButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.closeButtonText}>Cerrar</Text>
+          </Pressable>
         </View>
-      </Modal>
+      </View>
+    </Modal>
 
 
       <View style={styles.sensorSection}>
@@ -221,21 +256,21 @@ function Home() {
         ) : (
           <>
             <LightsCard
-              name="Living Lights"
+              name="Luces Sala"
               devices={5}
               isOn={leds.cuarto === "on"}
               image={require("@/assets/images/living.png")}
               onToggle={(newValue) => setLedState("cuarto", newValue ? "on" : "off")}
             />
             <LightsCard
-              name="Bed Lights"
+              name="Luces Cuarto "
               devices={3}
               isOn={leds.entrada === "on"}
               image={require("@/assets/images/living.png")}
               onToggle={(newValue) => setLedState("entrada", newValue ? "on" : "off")}
             />
             <LightsCard
-              name="Kitchen"
+              name="Luces Comedor"
               devices={2}
               isOn={leds.sala === "on"}
               image={require("@/assets/images/living.png")}
@@ -461,42 +496,72 @@ const styles = StyleSheet.create({
   
   modalBackground: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 20,
   },
-  
   modalContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
+    width: "100%",
+    maxHeight: "70%",
+    backgroundColor: "#F3F3F5", // tono claro similar a la tarjeta
+    borderRadius: 12,
     padding: 20,
-    width: "80%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 8,
   },
-  
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 15,
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#666666",
+    marginBottom: 12,
   },
-  
-  closeButton: {
+  loadingText: {
+    color: "#999999",
+    textAlign: "center",
+    marginVertical: 10,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginVertical: 10,
+  },
+  userCard: {
+    backgroundColor: "#E9EBEE", // fondo un poco más oscuro para diferenciar
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#444444",
+  },
+  userRole: {
+    fontSize: 14,
+    color: "#888888",
+    marginTop: 2,
+  },
+  noUsersText: {
+    textAlign: "center",
+    color: "#999999",
     marginTop: 20,
-    backgroundColor: colors.grey,
+    fontStyle: "italic",
+  },
+  closeButton: {
+    marginTop: 15,
+    backgroundColor: colors.black,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
   },
-  
   closeButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "600",
-    fontSize: 16,
   },
-  
   
 });
