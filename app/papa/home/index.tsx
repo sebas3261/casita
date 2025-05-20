@@ -238,13 +238,13 @@ function Home() {
               name="Cortina"
               isClosed={doors.cortina === "close"}
               image={require("@/assets/images/door.png")}
-              onToggle={(newValue) => setDoorState("cortina", newValue ? "close" : "open")}
+              onToggle={(newValue: any) => setDoorState("cortina", newValue ? "close" : "open")}
             />
             <DoorCard
               name="Garaje"
               isClosed={doors.garaje === "close"}
               image={require("@/assets/images/door.png")}
-              onToggle={(newValue) => setDoorState("garaje", newValue ? "close" : "open")}
+              onToggle={(newValue: any) => setDoorState("garaje", newValue ? "close" : "open")}
             />
             <DoorCard
               name="Principal"
@@ -260,21 +260,21 @@ function Home() {
               devices={5}
               isOn={leds.cuarto === "on"}
               image={require("@/assets/images/living.png")}
-              onToggle={(newValue) => setLedState("cuarto", newValue ? "on" : "off")}
+              onToggle={(newValue: any) => setLedState("cuarto", newValue ? "on" : "off")}
             />
             <LightsCard
               name="Luces Cuarto "
               devices={3}
               isOn={leds.entrada === "on"}
               image={require("@/assets/images/living.png")}
-              onToggle={(newValue) => setLedState("entrada", newValue ? "on" : "off")}
+              onToggle={(newValue: any) => setLedState("entrada", newValue ? "on" : "off")}
             />
             <LightsCard
               name="Luces Comedor"
               devices={2}
               isOn={leds.sala === "on"}
               image={require("@/assets/images/living.png")}
-              onToggle={(newValue) => setLedState("sala", newValue ? "on" : "off")}
+              onToggle={(newValue: any) => setLedState("sala", newValue ? "on" : "off")}
             />
           </>
         )}
@@ -283,7 +283,14 @@ function Home() {
   );
 }
 
-function DoorCard({ name, isClosed, image, onToggle }) {
+interface DoorCardProps {
+  name: string;
+  isClosed: boolean;
+  image: any; // Replace 'any' with a specific type if possible, e.g., ImageSourcePropType
+  onToggle: (newValue: boolean) => void;
+}
+
+function DoorCard({ name, isClosed, image, onToggle }: DoorCardProps) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}
@@ -296,7 +303,15 @@ function DoorCard({ name, isClosed, image, onToggle }) {
   );
 }
 
-function LightsCard({ name, devices, isOn, image, onToggle }) {
+interface LightsCardProps {
+  name: string;
+  devices: number;
+  isOn: boolean;
+  image: any; // Replace 'any' with a specific type if possible, e.g., ImageSourcePropType
+  onToggle: (newValue: boolean) => void;
+}
+
+function LightsCard({ name, devices, isOn, image, onToggle }: LightsCardProps) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}

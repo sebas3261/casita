@@ -21,7 +21,6 @@ const roles = [
   { label: "Papá", value: "papá", icon: "account-tie" },
   { label: "Mamá", value: "mamá", icon: "account-heart" },
   { label: "Hijo", value: "hijo", icon: "account-child" },
-  { label: "Otro", value: "otro", icon: "account" },
 ];
 
 export default function AuthScreen() {
@@ -53,9 +52,7 @@ export default function AuthScreen() {
       case "hijo":
         router.replace("./hijo/home");
         break;
-      case "otro":
-        router.replace("./otro/home");
-        break;
+      
       default:
         router.replace("./");
     }

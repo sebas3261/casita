@@ -216,7 +216,17 @@ function Home() {
   );
 }
 
-function DoorCard({ name, isClosed, image, onToggle }) {
+function DoorCard({
+  name,
+  isClosed,
+  image,
+  onToggle,
+}: {
+  name: string;
+  isClosed: boolean;
+  image: any; // Replace 'any' with a more specific type if possible, e.g., ImageSourcePropType
+  onToggle: (newValue: boolean) => void;
+}) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}
@@ -229,7 +239,19 @@ function DoorCard({ name, isClosed, image, onToggle }) {
   );
 }
 
-function LightsCard({ name, devices, isOn, image, onToggle }) {
+function LightsCard({
+  name,
+  devices,
+  isOn,
+  image,
+  onToggle,
+}: {
+  name: string;
+  devices: number;
+  isOn: boolean;
+  image: any; // Replace 'any' with a more specific type if possible, e.g., ImageSourcePropType
+  onToggle: (newValue: boolean) => void;
+}) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}
