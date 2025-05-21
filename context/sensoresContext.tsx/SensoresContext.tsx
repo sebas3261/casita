@@ -1,12 +1,13 @@
 // context/SensoresContext.tsx
 import { onValue, push, ref, set } from "firebase/database";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { realtimeDB as db } from "../../utils/firebaseConfig"; // Ajusta la ruta según tu proyecto
-import { useAuth } from "../authContext/authContext"; // Asegúrate de tener esto
+import { realtimeDB as db } from "../../utils/firebaseConfig";
+import { useAuth } from "../authContext/authContext";
 
 interface SensoresState {
   mov: number;
   temp: number;
+  hum: number;  // nueva variable humedad
 }
 
 interface SensoresContextProps {
@@ -16,6 +17,7 @@ interface SensoresContextProps {
 const defaultSensoresState: SensoresState = {
   mov: 0,
   temp: 0,
+  hum: 0,   // inicializar humedad en 0
 };
 
 const SensoresContext = createContext<SensoresContextProps>({
@@ -45,7 +47,7 @@ export const SensoresProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     const sensoresRef = ref(db, "sensores");
 
-    let ultimoMovimiento = 0; // evitar duplicados innecesarios
+    let ultimoMovimiento = 0;
 
     const unsubscribe = onValue(sensoresRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -53,9 +55,9 @@ export const SensoresProvider = ({ children }: { children: React.ReactNode }) =>
         const nuevoEstado: SensoresState = {
           mov: data.mov ?? 0,
           temp: data.temp ?? 0,
+          hum: data.hum ?? 0,   // leer humedad desde Firebase
         };
 
-        // Si se detecta cambio de mov de 0 a 1
         if (nuevoEstado.mov === 1 && ultimoMovimiento !== 1) {
           agregarRegistro("Se detectó movimiento");
         }

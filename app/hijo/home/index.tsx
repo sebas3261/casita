@@ -1,14 +1,14 @@
 import colors from "@/styles/Colors";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Animated, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../../context/authContext/authContext"; // Asegúrate de que la ruta sea correcta
 import { DoorsProvider, useDoorsContext } from "../../../context/doorsContext/DoorsContext";
 import { LedProvider, useLedContext } from "../../../context/ledsContext/LedsContext";
 import { useSensoresContext } from "../../../context/sensoresContext.tsx/SensoresContext";
 import {
-  useUsers
+  useUsers,
 } from "../../../context/usersContext/UsersContext";
 
 
@@ -33,14 +33,48 @@ function Home() {
 
   // Context para luces
   const { leds, setLedState } = useLedContext();
-  const { users, loading, error, updateUserRole } = useUsers();
+  const { users, loading, error, updateUserRole, deleteUser } = useUsers();
   const { sensores } = useSensoresContext();
   const { userName } = useAuth();
   const capitalizedUserName =
   userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase();
   const [modalVisible, setModalVisible] = useState(false);
   const [updatingUid, setUpdatingUid] = useState<string | null>(null);
-
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+  const shakeAnimation = useRef<Animated.CompositeAnimation | null>(null);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  
+  useEffect(() => {
+    if (Number(sensores.mov) === 1) {
+      // Crear animación de shake en loop
+      shakeAnimation.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(shakeAnim, { toValue: 5, duration: 100, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: -5, duration: 100, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: 3, duration: 100, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: -3, duration: 100, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+        ])
+      );
+      shakeAnimation.current.start();
+    } else {
+      // Detener animación si existe y resetear posición
+      if (shakeAnimation.current) {
+        shakeAnimation.current.stop();
+        shakeAnimation.current = null;
+      }
+      shakeAnim.setValue(0);
+    }
+    
+    // Limpieza al desmontar o cambiar sensores.mov
+    return () => {
+      if (shakeAnimation.current) {
+        shakeAnimation.current.stop();
+        shakeAnimation.current = null;
+      }
+      shakeAnim.setValue(0);
+    };
+  }, [sensores.mov]);
 
   const changeRole = async (uid: string, currentRole: string) => {
     // Ejemplo simple: alternar entre "Usuario" y "Admin"
@@ -57,13 +91,16 @@ function Home() {
     }
   };
 
-  const getWeatherDetails = (temp: number) => {
-    if (temp <= 5) return "❄️ Cold   H:6°  L:-2°";
-    if (temp > 5 && temp <= 15) return "🌤️ Partly Cloudy   H:17°  L:5°";
-    if (temp > 15 && temp <= 25) return "☀️ Sunny   H:26°  L:15°";
-    if (temp > 25) return "🔥 Hot   H:33°  L:20°";
-    return "🌤️ Partly Cloudy   H:17°  L:5°"; // default
+  const getWeatherDetails = (temp: number, hum: number) => {
+    if (temp <= 5) return `❄️ Cold   H:${hum}°`;
+    if (temp > 5 && temp <= 15) return `🌤️ Partly Cloudy   H:${hum}°`;
+    if (temp > 15 && temp <= 25) return `☀️ Sunny   H:${hum}°`;
+    if (temp > 25) return `🔥 Hot   H:${hum}°`;
+    return `🌤️ Partly Cloudy   H:${hum}°`; // default
   };
+
+  
+  
 
 
   return (
@@ -79,22 +116,26 @@ function Home() {
         />
       </View>
 
-      {/* Family Members */}
-     
+      
+
 
       <View style={styles.sensorSection}>
-  <View style={styles.sensorIconContainer}>
-    <MaterialCommunityIcons
-      name="motion-sensor"
-      size={32}
-      color="#985EE1"
-    />
-  </View>
-  <View style={styles.sensorTextContainer}>
-    <Text style={styles.sensorTitle}>Movimiento Detectado:</Text>
-    <Text style={styles.sensorValue}>{sensores.mov}</Text>
-  </View>
-</View>
+      <Animated.View style={{ flexDirection: "row", transform: [{ translateX: shakeAnim }] }}>
+      <View style={styles.sensorIconContainer}>
+        <MaterialCommunityIcons
+          name="motion-sensor"
+          size={32}
+          color="#985EE1"
+        />
+      </View>
+      <View style={styles.sensorTextContainer}>
+        <Text style={styles.sensorTitle}>Movimiento Detectado:</Text>
+        <Text style={styles.sensorValue}>
+          {Number(sensores.mov) === 1 ? "Detectando Movimiento" : "---"}
+        </Text>
+      </View>
+    </Animated.View>
+    </View>
 
 
       {/* Weather Info */}
@@ -107,7 +148,7 @@ function Home() {
         <Text style={styles.locationText}>My Location</Text>
         <Text style={styles.cityText}>Chía, Cundinamarca</Text>
         <Text style={styles.temperature}>{sensores.temp}</Text>
-        <Text style={styles.weatherDetails}>{getWeatherDetails(sensores.temp)}</Text>
+        <Text style={styles.weatherDetails}>{getWeatherDetails(sensores.temp, sensores.hum)}</Text>
       </LinearGradient>
 
       {/* Tabs */}
@@ -170,13 +211,13 @@ function Home() {
               name="Cortina"
               isClosed={doors.cortina === "close"}
               image={require("@/assets/images/door.png")}
-              onToggle={(newValue) => setDoorState("cortina", newValue ? "close" : "open")}
+              onToggle={(newValue: any) => setDoorState("cortina", newValue ? "close" : "open")}
             />
             <DoorCard
               name="Garaje"
               isClosed={doors.garaje === "close"}
               image={require("@/assets/images/door.png")}
-              onToggle={(newValue) => setDoorState("garaje", newValue ? "close" : "open")}
+              onToggle={(newValue: any) => setDoorState("garaje", newValue ? "close" : "open")}
             />
             <DoorCard
               name="Principal"
@@ -192,21 +233,21 @@ function Home() {
               devices={5}
               isOn={leds.cuarto === "on"}
               image={require("@/assets/images/living.png")}
-              onToggle={(newValue) => setLedState("cuarto", newValue ? "on" : "off")}
+              onToggle={(newValue: any) => setLedState("cuarto", newValue ? "on" : "off")}
             />
             <LightsCard
               name="Luces Cuarto "
               devices={3}
               isOn={leds.entrada === "on"}
               image={require("@/assets/images/living.png")}
-              onToggle={(newValue) => setLedState("entrada", newValue ? "on" : "off")}
+              onToggle={(newValue: any) => setLedState("entrada", newValue ? "on" : "off")}
             />
             <LightsCard
               name="Luces Comedor"
               devices={2}
               isOn={leds.sala === "on"}
               image={require("@/assets/images/living.png")}
-              onToggle={(newValue) => setLedState("sala", newValue ? "on" : "off")}
+              onToggle={(newValue: any) => setLedState("sala", newValue ? "on" : "off")}
             />
           </>
         )}
@@ -215,7 +256,14 @@ function Home() {
   );
 }
 
-function DoorCard({ name, isClosed, image, onToggle }: { name: string; isClosed: boolean; image: any; onToggle: (newValue: boolean) => void }) {
+interface DoorCardProps {
+  name: string;
+  isClosed: boolean;
+  image: any; // Replace 'any' with a specific type if possible, e.g., ImageSourcePropType
+  onToggle: (newValue: boolean) => void;
+}
+
+function DoorCard({ name, isClosed, image, onToggle }: DoorCardProps) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}
@@ -227,13 +275,21 @@ function DoorCard({ name, isClosed, image, onToggle }: { name: string; isClosed:
   );
 }
 
-function LightsCard({ name, devices, isOn, image, onToggle }: { name: string; devices: number; isOn: boolean; image: any; onToggle: (newValue: boolean) => void }) {
+interface LightsCardProps {
+  name: string;
+  devices: number;
+  isOn: boolean;
+  image: any; // Replace 'any' with a specific type if possible, e.g., ImageSourcePropType
+  onToggle: (newValue: boolean) => void;
+}
+
+function LightsCard({ name, devices, isOn, image, onToggle }: LightsCardProps) {
   return (
     <View style={styles.card}>
       {image && <Image source={image} style={styles.cardImage} />}
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{name}</Text>
-        <Text style={styles.cardSubtitle}>{isOn ? "On" : "Off"}</Text>
+        <Text style={styles.cardSubtitle}>{isOn ? "On" : "Off"}</Text>  {/* Aquí el cambio */}
       </View>
     </View>
   );
@@ -401,7 +457,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   sensorValue: {
-    fontSize: 36,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#985EE1",
   },

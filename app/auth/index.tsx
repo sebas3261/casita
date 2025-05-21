@@ -217,8 +217,9 @@ export default function AuthScreen() {
             })}
           </View>
 
-          <TouchableOpacity style={[styles.button, { backgroundColor: "#4a90e2" }]} onPress={pickImage}>
-            <Text style={styles.buttonText}>Tomar foto</Text>
+          <TouchableOpacity style={[styles.button]} onPress={pickImage}>
+            
+            <MaterialCommunityIcons name="camera" size={24} color={colors.white} />
           </TouchableOpacity>
 
           {photoUri && (
