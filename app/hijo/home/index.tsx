@@ -1,4 +1,3 @@
-import CustomSwitch from "@/components/ToogleSwitch";
 import colors from "@/styles/Colors";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
@@ -223,7 +222,6 @@ function DoorCard({ name, isClosed, image, onToggle }: { name: string; isClosed:
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{name}</Text>
         <Text style={styles.cardSubtitle}>{isClosed ? "Closed" : "Open"}</Text>
-        <CustomSwitch value={isClosed} onValueChange={onToggle} />
       </View>
     </View>
   );
@@ -236,7 +234,6 @@ function LightsCard({ name, devices, isOn, image, onToggle }: { name: string; de
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{name}</Text>
         <Text style={styles.cardSubtitle}>{isOn ? "On" : "Off"}</Text>
-        <CustomSwitch value={isOn} onValueChange={onToggle} />
       </View>
     </View>
   );

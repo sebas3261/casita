@@ -14,7 +14,10 @@ interface UsersContextProps {
   loading: boolean;
   error: string | null;
   updateUserRole: (uid: string, newRole: string) => Promise<void>;
+    //deleteUser
   refreshUsers: () => void;
+  deleteUser: (uid: string) => Promise<void>;
+
 }
 
 const UsersContext = createContext<UsersContextProps>({
@@ -23,6 +26,9 @@ const UsersContext = createContext<UsersContextProps>({
   error: null,
   updateUserRole: async () => {},
   refreshUsers: () => {},
+      deleteUser: async () => {},
+
+
 });
 
 export const useUsers = () => useContext(UsersContext);
@@ -77,6 +83,19 @@ export const UsersProvider = ({ children }: { children: React.ReactNode }) => {
       throw err;
     }
   };
+ 
+
+  //deleteUser
+    const deleteUser = async (uid: string) => {
+        try {
+        await update(ref(db, `users/${uid}`), { deleted: true });
+        // Actualización inmediata gracias a onValue
+        } catch (err) {
+        setError("Error eliminando usuario: " + (err as Error).message);
+        throw err;
+        }
+    };
+  
 
   const refreshUsers = () => {
     fetchUsers();
@@ -84,7 +103,7 @@ export const UsersProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <UsersContext.Provider
-      value={{ users, loading, error, updateUserRole, refreshUsers }}
+      value={{ users, loading, error, updateUserRole, refreshUsers, deleteUser }}
     >
       {children}
     </UsersContext.Provider>

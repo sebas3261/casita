@@ -7,9 +7,9 @@ import { Alert, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity,
 import { useAuth } from "../../../context/authContext/authContext"; // Asegúrate de que la ruta sea correcta
 import { DoorsProvider, useDoorsContext } from "../../../context/doorsContext/DoorsContext";
 import { LedProvider, useLedContext } from "../../../context/ledsContext/LedsContext";
-import { useSensoresContext } from "../../../context/sensoresContext.tsx/SensoresContext";
+import { useSensoresContext, } from "../../../context/sensoresContext.tsx/SensoresContext";
 import {
-  useUsers
+  useUsers,
 } from "../../../context/usersContext/UsersContext";
 
 import { Modal, Pressable } from "react-native";
@@ -35,7 +35,7 @@ function Home() {
 
   // Context para luces
   const { leds, setLedState } = useLedContext();
-  const { users, loading, error, updateUserRole } = useUsers();
+  const { users, loading, error, updateUserRole, deleteUser } = useUsers();
   const { sensores } = useSensoresContext();
   const { userName } = useAuth();
   const capitalizedUserName =
@@ -89,24 +89,20 @@ function Home() {
             onPress={() => setModalVisible(true)}
             style={styles.manageButton}
           >
-            <Text style={styles.manageButtonText}>Gestionar Miembros</Text>
+            <Text style={styles.manageButtonText}>Ver Miembros</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.familyAvatars}>
-          <Image
-            source={require("../../../assets/images/user.png")}
-            style={styles.avatar}
-          />
-          <Image
-            source={require("../../../assets/images/user.png")}
-            style={styles.avatar}
-          />
-          <Image
-            source={require("../../../assets/images/user.png")}
-            style={styles.avatar}
-          />
+          {users.map((user) => (
+            <Image
+              key={user.uid}
+              source={require("../../../assets/images/user.png")}
+              style={styles.avatar}
+            />
+          ))}
         </View>
+
       </View>
 
       {/* Modal */}
@@ -129,8 +125,13 @@ function Home() {
               keyExtractor={(item) => item.uid}
               renderItem={({ item }) => (
                 <View style={styles.userCard}>
-                  <Text style={styles.username}>{item.username}</Text>
-                  <Text style={styles.userRole}>Rol: {item.role}</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <View>
+                      <Text style={styles.username}>{item.username}</Text>
+                      <Text style={styles.userRole}>Rol: {item.role}</Text>
+                    </View>
+                    
+                  </View>
                 </View>
               )}
               ListEmptyComponent={
