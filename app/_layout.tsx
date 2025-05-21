@@ -1,5 +1,4 @@
 import { AuthProvider } from "@/context/authContext/authContext";
-import { DataProvider } from "@/context/dataContext/dataContext";
 import { DoorsProvider } from "@/context/doorsContext/DoorsContext";
 import { LedProvider } from "@/context/ledsContext/LedsContext";
 import { RegistrosProvider } from "@/context/registerContext/RegisterContext";
@@ -11,7 +10,6 @@ import { Stack } from "expo-router";
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <DataProvider>
         <LedProvider>
         <DoorsProvider>
           <SensoresProvider>
@@ -28,7 +26,6 @@ export default function RootLayout() {
         </SensoresProvider>
         </DoorsProvider>
         </LedProvider>
-      </DataProvider>
     </AuthProvider>
   );
 }

@@ -90,10 +90,12 @@ export default function AuthScreen() {
   };
 
   useEffect(() => {
-    if (!loading && userRole) {
+    console.log("userRole cambiado:", userRole);
+    if (userRole) {
       redirectByRole(userRole);
     }
-  }, [loading, userRole]);
+  }, [userRole]);
+  
 
   const handleSignup = async () => {
     if (!signupName || !signupEmail || !signupPassword || !signupRole) {

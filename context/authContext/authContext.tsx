@@ -8,23 +8,16 @@ import {
 } from "firebase/auth";
 import { onValue, push, ref, set } from "firebase/database";
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
-import React, { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { auth, realtimeDB as db, storage } from "../../utils/firebaseConfig"; // Asegúrate que storage está exportado en firebaseConfig
-import { dataReducer, defaultDataValues } from "../dataContext/dataReducer";
-import { authReducer, defaultValues } from "./authReducer";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { auth, realtimeDB as db, storage } from "../../utils/firebaseConfig";
 
 interface AuthContextProps {
   signup: (email: string, password: string, data: any, photoUri?: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  userState: {
-    user?: User | null;
-    isLogged: boolean;
-  };
   user?: User | null;
   userName: string;
   userRole: string;
-  getUserRole: () => string;
   loading: boolean;
 }
 
@@ -32,17 +25,18 @@ export const AuthContext = createContext<AuthContextProps>({} as AuthContextProp
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [userState, dispatch] = useReducer(authReducer, defaultValues);
-  const [dataState, dispatchData] = useReducer(dataReducer, defaultDataValues);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [userName, setUserName] = useState<string>("");
+  const [userRole, setUserRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  // Función para subir imagen a Firebase Storage
+  // Subir imagen a Firebase Storage
   const uploadImage = async (uri: string, id: string): Promise<string> => {
     try {
       const storageReference = storageRef(storage, `carPhotos/${id}_${Date.now()}`);
       const response = await fetch(uri);
       const blob = await response.blob();
-      const snapshot = await uploadBytes(storageReference, blob);
+      await uploadBytes(storageReference, blob);
       const url = await getDownloadURL(storageReference);
       console.log("URL de la imagen subida:", url);
       return url ?? "";
@@ -51,31 +45,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return "";
     }
   };
+
   const uploadLocalPhotoIfExists = async (userId: string) => {
     try {
-      const uri = await AsyncStorage.getItem('localPhotoUri');
+      const uri = await AsyncStorage.getItem("localPhotoUri");
       if (uri) {
-        // sube la foto con tu función uploadImage (de tu contexto)
         const url = await uploadImage(uri, userId);
-        // luego guarda en base de datos la URL de la foto
         await set(ref(db, "users/" + userId + "/photoURL"), url);
-        // borra la URI local para que no se vuelva a subir
-        await AsyncStorage.removeItem('localPhotoUri');
+        await AsyncStorage.removeItem("localPhotoUri");
       }
     } catch (error) {
-      console.error('Error subiendo foto local en login:', error);
+      console.error("Error subiendo foto local en login:", error);
     }
   };
 
-  // Función para registrar eventos en Firebase
+  // Registro de eventos en Firebase
   const agregarRegistro = async (mensaje: string) => {
-    const userName = dataState.name || userState.user?.email || "Anónimo";
+    const nombre = userName || user?.email || "Anónimo";
     try {
       const registrosRef = ref(db, "registros");
       const nuevoRegistroRef = push(registrosRef);
       const registro = {
         mensaje,
-        usuario: userName,
+        usuario: nombre,
         fecha: Date.now(),
       };
       await set(nuevoRegistroRef, registro);
@@ -86,36 +78,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Cargar datos extra del usuario (nombre, rol, etc)
-  const cargarDatosUsuario = (uid: string) => {
-    return new Promise<void>((resolve) => {
+  const cargarDatosUsuario = (uid: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
       onValue(
         ref(db, `/users/${uid}`),
         (snapshot) => {
           const data = snapshot.val();
           if (data) {
-            dispatchData({
-              type: "LOGIN",
-              payload: {
-                name: data.username || "Anonymous",
-                email: data.email || "Anonymous",
-                role: data.role || "Usuario",
-              },
-            });
+            setUserName(data.username || "Anonymous");
+            setUserRole(data.role || "Usuario");
           } else {
-            dispatchData({
-              type: "LOGIN",
-              payload: {
-                name: "Anonymous",
-                email: "Anonymous",
-                role: "Usuario",
-              },
-            });
+            setUserName("Anonymous");
+            setUserRole("Usuario");
           }
           resolve();
         },
-        {
-          onlyOnce: true,
-        }
+        { onlyOnce: true }
       );
     });
   };
@@ -125,16 +103,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        dispatch({ type: "LOGIN", payload: firebaseUser });
+        setUser(firebaseUser);
         try {
           await cargarDatosUsuario(firebaseUser.uid);
         } catch (error) {
           console.error("Error cargando datos usuario:", error);
-          dispatchData({ type: "LOGOUT" });
+          setUserName("");
+          setUserRole("");
         }
       } else {
-        dispatch({ type: "LOGOUT" });
-        dispatchData({ type: "LOGOUT" });
+        setUser(null);
+        setUserName("");
+        setUserRole("");
       }
       setLoading(false);
     });
@@ -142,69 +122,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  // Registro de usuario con subida opcional de foto
+  // Registrar nuevo usuario
   const signup = async (email: string, password: string, data: any, photoUri?: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      dispatch({ type: "LOGIN", payload: user });
+      const firebaseUser = userCredential.user;
+      setUser(firebaseUser);
 
-      // Subir foto si existe y obtener URL
       let photoURL = "";
       if (photoUri) {
-        photoURL = await uploadImage(photoUri, user.uid);
+        photoURL = await uploadImage(photoUri, firebaseUser.uid);
       }
 
-      // Guardar datos usuario en Realtime Database, incluyendo URL de foto si hay
-      await set(ref(db, "users/" + user.uid), {
+      await set(ref(db, "users/" + firebaseUser.uid), {
         username: data.name,
-        email: email,
+        email,
         role: data.role,
         photoURL,
       });
 
-      dispatchData({ type: "LOGIN", payload: data });
+      setUserName(data.name);
+      setUserRole(data.role);
     } catch (error) {
       console.error("Error en signup:", error);
       throw error;
     }
   };
+
+  // Login usuario existente
   const login = async (email: string, password: string) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      dispatch({ type: "LOGIN", payload: user });
-  
-      await cargarDatosUsuario(user.uid);
-  
-      // Subir foto local si existe
-      await uploadLocalPhotoIfExists(user.uid);
-  
-      await agregarRegistro(`${dataState.name || user.email || "Usuario"} inició sesión`);
+      const firebaseUser = userCredential.user;
+      setUser(firebaseUser);
+
+      await cargarDatosUsuario(firebaseUser.uid);
+      await uploadLocalPhotoIfExists(firebaseUser.uid);
+      await agregarRegistro(`${userName || firebaseUser.email || "Usuario"} inició sesión`);
     } catch (error) {
       console.error("Error en login:", error);
       throw error;
     }
   };
-  
 
-  // Logout con registro de evento
+  // Logout
   const logout = async () => {
     try {
-      const nombre = dataState.name || userState.user?.email || "Anónimo";
+      const nombre = userName || user?.email || "Anónimo";
       await agregarRegistro(`${nombre} cerró sesión`);
       await signOut(auth);
-      dispatch({ type: "LOGOUT" });
-      dispatchData({ type: "LOGOUT" });
+      setUser(null);
+      setUserName("");
+      setUserRole("");
     } catch (error) {
       console.error("Error en logout:", error);
       throw error;
     }
-  };
-
-  // Obtener rol actual
-  const getUserRole = () => {
-    return dataState.role || "";
   };
 
   return (
@@ -213,11 +186,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         signup,
         login,
         logout,
-        userState,
-        user: userState.user,
-        userName: dataState.name || "",
-        userRole: dataState.role || "",
-        getUserRole,
+        user,
+        userName,
+        userRole,
         loading,
       }}
     >
