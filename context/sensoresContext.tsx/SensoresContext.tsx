@@ -7,7 +7,8 @@ import { useAuth } from "../authContext/authContext";
 interface SensoresState {
   mov: number;
   temp: number;
-  hum: number;  // nueva variable humedad
+  hum: number;       // humedad
+  fotoCelda: "dia" | "noche" | "";  // nueva variable fotoCelda con valores esperados
 }
 
 interface SensoresContextProps {
@@ -17,7 +18,8 @@ interface SensoresContextProps {
 const defaultSensoresState: SensoresState = {
   mov: 0,
   temp: 0,
-  hum: 0,   // inicializar humedad en 0
+  hum: 0,
+  fotoCelda: "",    // inicializar vacío o algún valor por defecto
 };
 
 const SensoresContext = createContext<SensoresContextProps>({
@@ -55,7 +57,8 @@ export const SensoresProvider = ({ children }: { children: React.ReactNode }) =>
         const nuevoEstado: SensoresState = {
           mov: data.mov ?? 0,
           temp: data.temp ?? 0,
-          hum: data.hum ?? 0,   // leer humedad desde Firebase
+          hum: data.hum ?? 0,
+          fotoCelda: data.fotoCelda ?? "",  // leer fotoCelda de Firebase
         };
 
         if (nuevoEstado.mov === 1 && ultimoMovimiento !== 1) {

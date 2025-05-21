@@ -92,13 +92,12 @@ function Home() {
     }
   };
 
-  const getWeatherDetails = (temp: number, hum: number) => {
-    if (temp <= 5) return `❄️ Cold   H:${hum}°`;
-    if (temp > 5 && temp <= 15) return `🌤️ Partly Cloudy   H:${hum}°`;
-    if (temp > 15 && temp <= 25) return `☀️ Sunny   H:${hum}°`;
-    if (temp > 25) return `🔥 Hot   H:${hum}°`;
-    return `🌤️ Partly Cloudy   H:${hum}°`; // default
+  const getWeatherDetails = (fotoCelda: "dia" | "noche" | "", hum?: number) => {
+    if (fotoCelda === "dia") return `Día ☀️   H:${hum ?? "--"}°`;
+    if (fotoCelda === "noche") return `Noche 🌙   H:${hum ?? "--"}°`;
+    return `Desconocido   H:${hum ?? "--"}°`;
   };
+  
 
   
   
@@ -149,7 +148,7 @@ function Home() {
         <Text style={styles.locationText}>My Location</Text>
         <Text style={styles.cityText}>Chía, Cundinamarca</Text>
         <Text style={styles.temperature}>{sensores.temp}</Text>
-        <Text style={styles.weatherDetails}>{getWeatherDetails(sensores.temp, sensores.hum)}</Text>
+        <Text style={styles.weatherDetails}>{getWeatherDetails(sensores.fotoCelda, sensores.hum)}</Text>
       </LinearGradient>
 
       {/* Tabs */}
