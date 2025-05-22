@@ -47,7 +47,7 @@ function Home() {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   
   useEffect(() => {
-    if (Number(sensores.mov) === 1) {
+    if (Number(sensores.mov) === 0) {
       // Crear animación de shake en loop
       shakeAnimation.current = Animated.loop(
         Animated.sequence([
@@ -200,7 +200,7 @@ function Home() {
       <View style={styles.sensorTextContainer}>
         <Text style={styles.sensorTitle}>Movimiento Detectado:</Text>
         <Text style={styles.sensorValue}>
-          {Number(sensores.mov) === 1 ? "Detectando Movimiento" : "---"}
+          {Number(sensores.mov) === 0 ? "Detectando Movimiento" : "---"}
         </Text>
       </View>
     </Animated.View>
@@ -283,26 +283,20 @@ function Home() {
               onToggle={(newValue: any) => setDoorState("cortina", newValue ? "close" : "open")}
             />
             <DoorCard
-              name="Garaje"
+              name="Puerta Principal"
               isClosed={doors.garaje === "close"}
               image={require("@/assets/images/door.png")}
               onToggle={(newValue: any) => setDoorState("garaje", newValue ? "close" : "open")}
-            />
-            <DoorCard
-              name="Principal"
-              isClosed={doors.principal === "close"}
-              image={require("@/assets/images/door.png")}
-              onToggle={(newValue) => setDoorState("principal", newValue ? "close" : "open")}
             />
           </>
         ) : (
           <>
             <LightsCard
-              name="Luces Sala"
-              devices={5}
-              isOn={leds.cuarto === "on"}
+              name="Luz principal"
+              devices={2}
+              isOn={leds.sala === "on"}
               image={require("@/assets/images/living.png")}
-              onToggle={(newValue: any) => setLedState("cuarto", newValue ? "on" : "off")}
+              onToggle={(newValue: any) => setLedState("sala", newValue ? "on" : "off")}
             />
             <LightsCard
               name="Luces Cuarto "
@@ -310,13 +304,6 @@ function Home() {
               isOn={leds.entrada === "on"}
               image={require("@/assets/images/living.png")}
               onToggle={(newValue: any) => setLedState("entrada", newValue ? "on" : "off")}
-            />
-            <LightsCard
-              name="Luces Comedor"
-              devices={2}
-              isOn={leds.sala === "on"}
-              image={require("@/assets/images/living.png")}
-              onToggle={(newValue: any) => setLedState("sala", newValue ? "on" : "off")}
             />
           </>
         )}
