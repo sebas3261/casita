@@ -209,13 +209,13 @@ function Home() {
             <DoorCard
               name="Cortina"
               isClosed={doors.cortina === "close"}
-              image={require("@/assets/images/door.png")}
+              image={require("../../../assets/images/Cortina.jpeg")}
               onToggle={(newValue: any) => setDoorState("cortina", newValue ? "close" : "open")}
             />
             <DoorCard
               name="Puerta Principal"
               isClosed={doors.garaje === "close"}
-              image={require("@/assets/images/door.png")}
+              image={require("../../../assets/images/Principal.jpeg")}
               onToggle={(newValue: any) => setDoorState("garaje", newValue ? "close" : "open")}
             />
           </>
@@ -225,14 +225,14 @@ function Home() {
               name="Luz principal"
               devices={2}
               isOn={leds.sala === "on"}
-              image={require("@/assets/images/living.png")}
+              image={require("../../../assets/images/Sala.jpeg")}
               onToggle={(newValue: any) => setLedState("sala", newValue ? "on" : "off")}
             />
             <LightsCard
               name="Luces Cuarto "
               devices={3}
               isOn={leds.entrada === "on"}
-              image={require("@/assets/images/living.png")}
+              image={require("../../../assets/images/Cuarto.jpeg")}
               onToggle={(newValue: any) => setLedState("entrada", newValue ? "on" : "off")}
             />
           </>
